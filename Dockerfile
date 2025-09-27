@@ -1,76 +1,65 @@
-# Builder stage: Install python dependencies
-FROM python:3.11-slim as builder
+# --- STAGE 1: Builder (Optimized for Dependency Installation) ---
+    FROM python:3.11-slim as builder
 
-# Set environment variables for the build process
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV PATH="/home/django/.local/bin:$PATH"
-
-# Create and set the working directory
-WORKDIR /app
-
-# Copy the requirements file early for better build caching
-COPY requirements.txt .
-
-# Install system dependencies (needed to build python packages like psycopg2),
-# run pip install, and then remove the build dependencies and cleanup
-# all in a single layer for maximum efficiency and minimum image size.
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y \
-    gcc \
-    libpq-dev \
-    musl-dev \
-    libffi-dev \
-    # postgresql-client is useful to keep for debugging/entrypoint in this stage
-    postgresql-client \
-    # Install Python packages
-    && pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt \
-    # Explicitly remove build-only dependencies
-    && apt-get remove --purge -y gcc libpq-dev musl-dev libffi-dev \
-    && apt-get autoremove -y \
-    # Final cleanup of apt lists and temp files
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Final stage: Minimal runtime image
-FROM python:3.11-slim
-
-# Install system dependencies needed for runtime (pg_isready and networking tools)
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y \
-    postgresql-client \
-    # Clean up to keep image small
-    && rm -rf /var/lib/apt/lists/*
-
-# Create and set the working directory
-WORKDIR /app
-
-# Create a non-root user for security
-RUN adduser --system --group django
-ENV HOME /home/django
-
-# Copy the entrypoint script and ensure it's executable
-COPY --chmod=0755 entrypoint.sh /usr/local/bin/entrypoint.sh
-
-# Copy dependencies from the builder stage
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/
-COPY --from=builder /home/django/.local /home/django/.local
-
-# Copy application code
-COPY . /app
-
-# Change ownership of the application directory to the non-root user
-RUN chown -R django:django /app
-
-# Use the non-root user
-USER django
-
-# Expose the Gunicorn port
-EXPOSE 8000
-
-# Set the entrypoint script as the command to run
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
-# Default command (used as argument to ENTRYPOINT)
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "ChronosAtlas.wsgi:application"]
+    # Set environment variables for Python optimization
+    ENV PYTHONDONTWRITEBYTECODE 1
+    ENV PYTHONUNBUFFERED 1
+    
+    # Install system dependencies and build tools needed for psycopg2
+    RUN apt-get update \
+        && apt-get install --no-install-recommends -y \
+        gcc \
+        libpq-dev \
+        # Install dependencies needed for static files (if any)
+        # and clean up in a single layer
+        && pip install --upgrade pip
+    
+    # Set the working directory
+    WORKDIR /app
+    
+    # Copy requirements file and install Python dependencies
+    COPY requirements.txt .
+    
+    # Install dependencies and then remove build tools to keep the layer lean
+    RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt \
+        && apt-get purge -y --auto-remove gcc libpq-dev
+    
+    # --- STAGE 2: Final (Minimal Runtime Image) ---
+    FROM python:3.11-slim as final
+    
+    # Set environment variables
+    ENV PYTHONDONTWRITEBYTECODE 1
+    ENV PYTHONUNBUFFERED 1
+    
+    # Set the working directory
+    WORKDIR /app
+    
+    # Install runtime dependencies (libpq-dev dependencies without the dev headers)
+    # FIX: Added 'postgresql-client' here, which provides the 'pg_isready' command
+    RUN apt-get update \
+        && apt-get install --no-install-recommends -y \
+        libpq5 \
+        postgresql-client \
+        # Clean up APT cache to reduce image size
+        && rm -rf /var/lib/apt/lists/*
+    
+    # Copy pre-built wheels from the builder stage
+    COPY --from=builder /usr/src/app/wheels /wheels
+    # Install packages from wheels
+    RUN pip install --no-cache-dir /wheels/*
+    
+    # Copy the rest of the application code
+    COPY . /app
+    
+    # Ensure entrypoint.sh is executable and copy it to the bin directory
+    # Note: The entrypoint script path must match the ENTRYPOINT instruction below.
+    COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+    RUN chmod +x /usr/local/bin/entrypoint.sh
+    
+    # Expose the application port
+    EXPOSE 8000
+    
+    # Specify the default command to run the application
+    # Use the correct path for the entrypoint script
+    ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+    

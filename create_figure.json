@@ -1,0 +1,3 @@
+{
+    "query": "mutation CreateFigureMutation { createFigure(input: {name: \"Nikola Tesla\", birthYear: 1856, deathYear: 1943, description: \"Inventor, electrical engineer, mechanical engineer, and futurist.\" }) { figure { id name birthYear } } }"
+  }

@@ -3,164 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronosAtlas GraphQL Simulator</title>
+    <title>ChronosAtlas GraphQL Tester</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f7f7f9; }
-        .data-card {
-            background-color: white;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        /* Custom styles for responsiveness and appearance */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
         }
-        .error-message {
-            background-color: #fee2e2;
-            color: #ef4444;
-            border: 1px solid #fca5a5;
-            padding: 1rem;
-            border-radius: 0.5rem;
+        .container {
+            max-width: 1200px;
         }
-        .data-list { list-style: none; padding-left: 0; }
-        .data-list li { padding: 0.5rem 0; border-bottom: 1px dashed #e5e7eb; }
-        .data-list li:last-child { border-bottom: none; }
+        textarea {
+            resize: none;
+            min-height: 250px;
+        }
     </style>
 </head>
-<body class="p-8">
+<body class="p-4 md:p-8">
+    <div class="container mx-auto bg-white shadow-xl rounded-xl p-6 md:p-10">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">ChronosAtlas GraphQL Tester</h1>
+        <p class="text-gray-600 mb-6">
+            Use this interface to test the deployed Django/Graphene API. Ensure your Docker services are running and accessible.
+        </p>
 
-    <div class="max-w-4xl mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">ChronosAtlas Frontend Simulator</h1>
-            <p class="text-lg text-gray-600">Testing connection to GraphQL Backend: <code class="font-mono text-blue-600">http://127.0.0.1:8080/graphql/</code></p>
-            <p class="mt-4 text-sm text-yellow-700">
-                ⚠️ **CORS WARNING:** This file will only work if your Django server has **CORS_ALLOW_ALL_ORIGINS = True** (which is configured in the latest `settings.py`).
-            </p>
-        </header>
+        <!-- API Configuration -->
+        <div class="mb-6">
+            <label for="apiUrl" class="block text-sm font-medium text-gray-700 mb-2">GraphQL Endpoint URL:</label>
+            <input type="text" id="apiUrl" value="http://localhost:8000/graphql/"
+                   class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 shadow-sm"
+                   placeholder="e.g., http://localhost:8000/graphql/">
+        </div>
 
-        <main class="grid md:grid-cols-2 gap-8">
-            <!-- Figures Panel -->
-            <div class="data-card">
-                <h2 class="text-2xl font-semibold text-indigo-700 mb-4">Historical Figures</h2>
-                <div id="figures-status" class="text-gray-500 italic mb-4">Loading figures...</div>
-                <ul id="figures-list" class="data-list">
-                    <!-- Data will be injected here -->
-                </ul>
-            </div>
+        <!-- Query Section -->
+        <div class="mb-6">
+            <label for="queryTextarea" class="block text-sm font-medium text-gray-700 mb-2">GraphQL Query:</label>
+            <textarea id="queryTextarea"
+                      class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 text-sm"
+                      placeholder="Enter your GraphQL query here...">
+query ComprehensiveMVPTest {
+  figures { # Confirmed working name from Introspection
+    id
+    name
+    birthYear
+    deathYear
+    description
+  }
+  timelineEvents { # Assumed name after fixing backend schema
+    id
+    title
+    year
+    category
+    description
+  }
+}
+            </textarea>
+        </div>
 
-            <!-- Timeline Events Panel -->
-            <div class="data-card">
-                <h2 class="text-2xl font-semibold text-emerald-700 mb-4">Timeline Events</h2>
-                <div id="events-status" class="text-gray-500 italic mb-4">Loading events...</div>
-                <ul id="events-list" class="data-list">
-                    <!-- Data will be injected here -->
-                </ul>
-            </div>
-        </main>
+        <!-- Action Button and Status -->
+        <div class="flex items-center space-x-4 mb-8">
+            <button id="sendQueryBtn"
+                    class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50">
+                Send Query
+            </button>
+            <span id="statusMessage" class="text-sm font-medium text-gray-500">Ready.</span>
+        </div>
+        
+        <!-- Response Section -->
+        <div>
+            <label for="responseTextarea" class="block text-lg font-bold text-gray-800 mb-2">GraphQL Response:</label>
+            <textarea id="responseTextarea" readonly
+                      class="w-full p-4 border border-gray-300 rounded-lg bg-gray-800 text-green-400 text-sm font-mono overflow-auto"
+                      style="min-height: 350px;"
+                      placeholder="Response will appear here..."></textarea>
+        </div>
+
     </div>
 
     <script>
-        const GRAPHQL_ENDPOINT = 'http://127.0.0.1:8080/graphql/';
-        const figuresStatusEl = document.getElementById('figures-status');
-        const eventsStatusEl = document.getElementById('events-status');
-        const figuresListEl = document.getElementById('figures-list');
-        const eventsListEl = document.getElementById('events-list');
+        const sendQueryBtn = document.getElementById('sendQueryBtn');
+        const apiUrlInput = document.getElementById('apiUrl');
+        const queryTextarea = document.getElementById('queryTextarea');
+        const responseTextarea = document.getElementById('responseTextarea');
+        const statusMessage = document.getElementById('statusMessage');
 
-        // General GraphQL fetch utility
-        async function fetchGraphQL(query) {
+        // Function to copy text to clipboard
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
+
+        sendQueryBtn.addEventListener('click', async () => {
+            const apiUrl = apiUrlInput.value.trim();
+            const query = queryTextarea.value.trim();
+
+            if (!apiUrl || !query) {
+                responseTextarea.value = "Error: API URL and query cannot be empty.";
+                statusMessage.textContent = "Error occurred.";
+                statusMessage.className = "text-sm font-medium text-red-500";
+                return;
+            }
+
+            statusMessage.textContent = "Sending query...";
+            statusMessage.className = "text-sm font-medium text-indigo-500 animate-pulse";
+            responseTextarea.value = "Loading...";
+
             try {
-                const response = await fetch(GRAPHQL_ENDPOINT, {
+                const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
                     body: JSON.stringify({ query }),
                 });
 
-                // Check for network errors (response status 4xx/5xx)
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP Error ${response.status}: ${response.statusText}. Server response: ${errorText.substring(0, 100)}...`);
-                }
-
-                const jsonResponse = await response.json();
-
-                // Check for GraphQL errors (errors array in payload)
-                if (jsonResponse.errors) {
-                    throw new Error('GraphQL Errors: ' + jsonResponse.errors.map(e => e.message).join(' | '));
-                }
+                const data = await response.json();
                 
-                return jsonResponse.data;
+                // Format the JSON response nicely
+                const formattedData = JSON.stringify(data, null, 2);
+
+                responseTextarea.value = formattedData;
+                
+                if (response.ok) {
+                    statusMessage.textContent = "Success! (Status " + response.status + ")";
+                    statusMessage.className = "text-sm font-medium text-green-600";
+                } else {
+                    statusMessage.textContent = "API Error! (Status " + response.status + ")";
+                    statusMessage.className = "text-sm font-medium text-yellow-500";
+                }
 
             } catch (error) {
-                // Log the failure and return null to be handled by the calling function
-                console.error('[CONSOLE_ERROR] Fetch Error:', error);
-                return { error: error.message };
+                const errorMessage = `Fetch Error: ${error.message}. Check if the API service is running and the URL is correct.`;
+                responseTextarea.value = JSON.stringify({ error: errorMessage }, null, 2);
+                statusMessage.textContent = "Connection Failed!";
+                statusMessage.className = "text-sm font-medium text-red-600";
             }
-        }
-
-        function renderData(data, listElement, statusElement, dataType) {
-            if (data.error) {
-                statusElement.className = 'error-message mb-4';
-                statusElement.innerHTML = `Error fetching ${dataType} (Connection Refused): <br><strong>${data.error}</strong>.<br><br>Please ensure your Django service is running via your Docker development command and is accessible at ${GRAPHQL_ENDPOINT}`;
-                return;
-            }
-
-            const listData = data[dataType];
-            if (!listData || listData.length === 0) {
-                statusElement.innerHTML = `No ${dataType.toLowerCase()} found in the database.`;
-                statusElement.classList.remove('italic');
-                return;
-            }
-
-            statusElement.innerHTML = `Successfully loaded ${listData.length} ${dataType.toLowerCase()}.`;
-            statusElement.classList.remove('italic');
-
-            listElement.innerHTML = listData.map(item => {
-                if (dataType === 'figures') {
-                    return `
-                        <li>
-                            <span class="font-bold text-indigo-700">${item.name}</span>
-                            <span class="text-sm text-gray-500">(${item.birthYear || 'N/A'} - ${item.deathYear || 'N/A'})</span>
-                        </li>
-                    `;
-                } else if (dataType === 'timelineEvents') {
-                    return `
-                        <li>
-                            <span class="font-bold text-emerald-700">${item.title}</span>
-                            <span class="text-sm text-gray-500">(${item.year})</span>
-                            <span class="text-xs text-gray-400 block">${item.category}</span>
-                        </li>
-                    `;
-                }
-            }).join('');
-        }
-
-        async function loadFigures() {
-            const query = `{
-                figures {
-                    name
-                    birthYear
-                    deathYear
-                }
-            }`;
-            const data = await fetchGraphQL(query);
-            renderData(data, figuresListEl, figuresStatusEl, 'figures');
-        }
-
-        async function loadEvents() {
-            const query = `{
-                timelineEvents {
-                    title
-                    year
-                    category
-                }
-            }`;
-            const data = await fetchGraphQL(query);
-            renderData(data, eventsListEl, eventsStatusEl, 'timelineEvents');
-        }
-
-        window.onload = function () {
-            loadFigures();
-            loadEvents();
-        }
+        });
     </script>
 </body>
 </html>
