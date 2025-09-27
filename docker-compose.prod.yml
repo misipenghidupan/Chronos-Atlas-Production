@@ -1,0 +1,72 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-chronosatlas}
+      POSTGRES_USER: ${POSTGRES_USER:-chronosuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    networks:
+      - chronos-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chronosuser} -d ${POSTGRES_DB:-chronosatlas}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # Environment variables are passed directly from the shell/env file
+    environment:
+      # Django Settings
+      DJANGO_SETTINGS_MODULE: ChronosAtlas.settings
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: 'False'
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      
+      # Database Configuration (Used by settings.py and entrypoint.sh)
+      DATABASE_URL: postgres://${POSTGRES_USER:-chronosuser}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-chronosatlas}
+      
+      # CORS Configuration
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-True}
+      
+    # Use the custom entrypoint script
+    entrypoint: ["/usr/local/bin/entrypoint.sh"]
+
+    ports:
+      # Mapped from host:container. Now accessible at http://localhost:8080
+      - "8080:8000"
+    
+    depends_on:
+      db:
+        condition: service_healthy # Wait for the DB to pass its healthcheck first
+    
+    networks:
+      - chronos-network
+    
+    volumes:
+      # Static files collected by entrypoint.sh will be stored here
+      - static_volume:/app/staticfiles
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data_prod:
+    driver: local
+  static_volume:
+    driver: local
+
+networks:
+  chronos-network:
+    driver: bridge

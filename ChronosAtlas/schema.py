@@ -1,9 +1,19 @@
 import graphene
-from timeline.schema import Query as TimelineQuery
+from timeline.schema import TimelineQuery, TimelineMutation
+from figures.schema import FigureQuery, FigureMutation
 
-# Combine all application-specific queries into the root Query class
-class Query(TimelineQuery, graphene.ObjectType):
-    # This class will inherit all fields and resolvers from TimelineQuery
+class Query(TimelineQuery, FigureQuery, graphene.ObjectType):
+    """
+    The root GraphQL Query class. 
+    It inherits all fields and resolvers from FigureQuery and TimelineQuery.
+    """
     pass
 
-schema = graphene.Schema(query=Query)
+class Mutation(TimelineMutation, FigureMutation, graphene.ObjectType):
+    """
+    The root GraphQL Mutation class.
+    It combines mutations from all application schemas.
+    """
+    pass
+
+schema = graphene.Schema(query=Query, mutation=Mutation)

@@ -1,45 +1,40 @@
 import os
-from decouple import config
+from environ import Env 
 from pathlib import Path
+
+# Initialize django-environ
+env = Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Quick-start development settings - unsuitable for production
+SECRET_KEY = env.str('SECRET_KEY', default='django-insecure-default-key-for-dev')
 
-# ==============================================================================
-# CORE SECURITY SETTINGS
-# ==============================================================================
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = env.bool('DEBUG', default=True)
 
-# Uses python-decouple to load secrets from the .env file
-SECRET_KEY = config("SECRET_KEY", default="insecure-secret-key")
-DEBUG = config("DEBUG", default=True, cast=bool)
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost'])
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=lambda v: v.split(","))
-
-
-# ==============================================================================
-# APPLICATION DEFINITION
-# ==============================================================================
-
+# Application definition
 INSTALLED_APPS = [
-    # Django Built-in Apps
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    
-    # Third-Party Apps
-    "graphene_django",
-    
-    # Project Apps
-    "timeline",  # The application containing your models and schema
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'corsheaders',  # Added for CORS headers
+    'graphene_django',
+    'timeline',
+    'figures', # Ensure figures app is here
 ]
 
-# FIXES ERRORS E408, E409, E410
+# CORS Headers Middleware (add to top of MIDDLEWARE)
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Add this at the top
     'django.middleware.security.SecurityMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware', # Only for production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -48,9 +43,17 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# CORS Configuration for Development (Allows the local HTML file to connect)
+if DEBUG:
+    # WARNING: Do NOT use this in production. Allows all origins for development testing.
+    CORS_ALLOW_ALL_ORIGINS = True 
+else:
+    CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+    CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS', default=True)
+
+
 ROOT_URLCONF = 'ChronosAtlas.urls'
 
-# FIXES ERROR E403 (Required for Admin app)
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -70,68 +73,41 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ChronosAtlas.wsgi.application'
 
 
-# ==============================================================================
-# DATABASE
-# ==============================================================================
-
-# Uses variables set in docker-compose.yml (DB_HOST: db)
+# Database
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME", default="chronosatlas"),
-        "USER": config("DB_USER", default="chronos_user"),
-        "PASSWORD": config("DB_PASSWORD", default="chronos_pass"),
-        "HOST": config("DB_HOST", default="db"),
-        "PORT": config("DB_PORT", default=5432, cast=int),
-    }
+    # DATABASE_URL is read automatically by django-environ
+    'default': env.db_url(
+        'DATABASE_URL',
+        default='sqlite:///db.sqlite3',
+    )
 }
 
 
-# ==============================================================================
-# PASSWORD VALIDATION AND LANGUAGE
-# ==============================================================================
-
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
 
 
+# Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
 
-# ==============================================================================
-# STATIC & MEDIA FILES
-# ==============================================================================
-
-STATIC_URL = "/static/"
-# Used by entrypoint.sh to collect static files
-STATIC_ROOT = BASE_DIR / "staticfiles" 
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-
-
-# ==============================================================================
-# GRAPHENE (GraphQL) CONFIGURATION
-# ==============================================================================
-
-GRAPHENE = {
-    "SCHEMA": "ChronosAtlas.schema.schema", # Points to your root schema.py file
-}
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles' # <-- NEW: Where collectstatic puts files
+STATICFILES_DIRS = []                  # <-- NEW: Where to find extra static files
 
 # Default primary key field type
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Graphene Configuration
+GRAPHENE = {
+    'SCHEMA': 'ChronosAtlas.schema.schema', # Path to your GraphQL schema
+}
