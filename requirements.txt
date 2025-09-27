@@ -1,0 +1,8 @@
+Django>=4.2
+psycopg2-binary>=2.9
+graphene-django>=3.0
+python-decouple>=3.8
+
+# Phase 2 (to be uncommented later)
+celery>=5.3
+redis>=5.0
