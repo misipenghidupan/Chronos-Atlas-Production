@@ -1,4 +1,5 @@
 import os
+import dj_database_url # <--- ADDED: Imports the database utility
 from .settings import * # Import base settings first
 
 # Standard Production Settings Overrides
@@ -15,6 +16,22 @@ SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 # ------------------------------------------------------------------
+
+# --- CRITICAL FIX: Load PostgreSQL database from environment variable ---
+# Use the environment variable to connect to the external PostgreSQL database
+# The DATABASE_URL environment variable is set in the docker-compose.prod.yml
+try:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600  # Set connection pool age
+        )
+    }
+except Exception as e:
+    # Fallback to base settings if DB setup fails (shouldn't happen in Docker)
+    print(f"Failed to load DATABASE_URL in settings_prod.py: {e}")
+# -----------------------------------------------------------------------
+
 
 # --- CRITICAL FIX: Configure Logging to output full tracebacks to stdout/stderr in Docker ---
 # When DEBUG=False, Django normally swallows tracebacks. This forces all errors

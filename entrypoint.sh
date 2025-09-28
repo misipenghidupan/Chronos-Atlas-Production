@@ -4,27 +4,16 @@
 set -e
 
 # --- 0. Set Django Settings Module ---
-# CRITICAL FIX: Explicitly set the DJANGO_SETTINGS_MODULE environment variable.
-# This ensures all subsequent Python commands (migrate, collectstatic, gunicorn)
-# reliably use the correct production settings file.
+# Ensures all Python commands use the correct production settings.
 export DJANGO_SETTINGS_MODULE=ChronosAtlas.settings_prod
 
-# --- 1. Extract DB connection details from DATABASE_URL using awk ---
-# URL format is: postgres://USER:PASSWORD@HOST:PORT/NAME
-# We must use the correct indices determined by your environment:
-DB_USER=$(echo "$DATABASE_URL" | awk -F'[@/:]' '{print $4}')     # Expected to grab USER
-PGPASSWORD=$(echo "$DATABASE_URL" | awk -F'[@/:]' '{print $5}')  # Expected to grab PASSWORD
-DB_HOST=$(echo "$DATABASE_URL" | awk -F'[@/:]' '{print $6}')     # Expected to grab HOST (should be 'db')
-DB_PORT=$(echo "$DATABASE_URL" | awk -F'[@/:]' '{print $7}')     # Expected to grab PORT (should be '5432')
-DB_NAME=$(echo "$DATABASE_URL" | awk -F'[@/:]' '{print $8}')     # Expected to grab NAME
-
-# --- IMPORTANT CHECK ---
-if [ -z "$DB_USER" ] || [ -z "$DB_HOST" ] || [ -z "$DB_NAME" ]; then
-    echo "CRITICAL ERROR: Missing essential database parameters (User, Host, or Name) after shell parsing."
-    echo "Full DATABASE_URL being parsed: $DATABASE_URL"
-    echo "Parsed values: User='$DB_USER', Password='<REDACTED>', Host='$DB_HOST', Port='$DB_PORT', Name='$DB_NAME'"
-    exit 1
-fi
+# --- 1. Use hardcoded DB credentials for pg_isready ---
+# These MUST match the 'db' service credentials in docker-compose.prod.yml
+DB_HOST="db"
+DB_PORT="5432"
+DB_USER="chronosuser"
+PGPASSWORD="chronospassword"
+DB_NAME="chronosatlas"
 
 # --- 2. Wait for PostgreSQL to be ready ---
 echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT..."
@@ -39,16 +28,13 @@ echo "PostgreSQL is up and running! Proceeding to server startup."
 
 # --- 3. Run migrations and collect static files ---
 echo "Running migrations..."
-# Removed --settings argument; now uses DJANGO_SETTINGS_MODULE env var.
+# --noinput prevents interactive prompts (like the one for 'figures' app)
 python manage.py migrate --noinput
 echo "Collecting static files..."
-# Removed --settings argument; now uses DJANGO_SETTINGS_MODULE env var.
 python manage.py collectstatic --noinput
 
 # --- 4. Execute the Main Command: Start Gunicorn Server ---
 echo "Starting Gunicorn server..."
-# FIX: Added --error-logfile - to force error tracebacks to be logged to stdout/stderr.
-# NEW FIX: Added --log-level debug to force Gunicorn to output detailed application errors.
 exec python -m gunicorn ChronosAtlas.wsgi:application \
     --bind 0.0.0.0:8000 \
     --workers 4 \
