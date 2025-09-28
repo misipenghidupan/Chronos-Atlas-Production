@@ -15,14 +15,13 @@ services:
   api:
     build: .
     container_name: chronos_api
-    # REMOVED: The conflicting 'command' line. 
-    # Docker will now correctly use the ENTRYPOINT from the Dockerfile 
-    # (/usr/local/bin/entrypoint.sh).
     volumes:
-      - .:/usr/src/app
-    # CHANGED: Mapping internal 8000 to external 8080 to avoid conflicts
+  # CHANGE THIS LINE: from .:/usr/src/app to .:/app
+    - .:/app 
+    - ./data:/app/data
+      
     ports:
-      - "8080:8000" 
+      - "8080:8000"  
     # This is the file we just created
     env_file:
       - .env.prod

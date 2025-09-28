@@ -1,7 +1,11 @@
 import random
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from timeline.models import Figure, Field, Influence
+
+# CORRECTED IMPORTS: 
+# Figure and Field are in the 'figures' app. Influence is in the 'timeline' app.
+from figures.models import Figure, Field 
+from timeline.models import Influence 
 
 class Command(BaseCommand):
     help = "Loads initial MVP data for Chronos Atlas."
@@ -38,12 +42,22 @@ class Command(BaseCommand):
 
         figure_objects = {}
         for data in figure_data:
+            # Generate temporary unique IDs for required fields
+            slug_val = data["name"].lower().replace(' ', '-')
+            wikidata_val = f"Q-{data['name'].replace(' ', '')}-{abs(data['birth'])}"
+
             figure, created = Figure.objects.get_or_create(
+                # Lookup is by name
                 name=data["name"],
                 defaults={
-                    "description": data["desc"],
-                    "birth_year": data["birth"],
-                    "death_year": data["death"],
+                    # Mapped data keys to Figure model fields
+                    "summary": data["desc"],
+                    "normalized_birth_year": data["birth"],
+                    "normalized_death_year": data["death"],
+                    
+                    # Temporarily fill required unique fields
+                    "slug": slug_val,
+                    "wikidata_id": wikidata_val,
                 }
             )
             figure_objects[data["name"]] = figure

@@ -1,104 +1,73 @@
-# 📚 ChronosAtlas API
+# Chronos Atlas
 
-A Django/Graphene-based GraphQL API for managing historical figures and timeline events, deployed using Docker and Docker Compose.
+## 🌍 Overview
 
-## 🚀 Current Project Status (Production Ready)
+Chronos Atlas is a timeline-focused API designed to provide historical data on figures, their contributions (Fields), and their influence relationships. The API is built using **Django**, **Django REST Framework (DRF)**, **Graphene-Django (GraphQL)**, and **PostgreSQL**.
 
-The application is currently **stable and fully deployed** in a Dockerized environment using the `docker-compose.prod.yml` file.
+The project is containerized using **Docker** and **Docker Compose** for a consistent production environment.
 
-  * **Core Feature:** CRUD operations are fully functional for the **`TimelineEvent`** model and the **`Figure`** model via the GraphQL endpoint.
-  * **Deployment:** The application successfully handles PostgreSQL database connection, runs migrations upon startup, collects static files, and serves the API via Gunicorn on port **8080**.
+## 🚀 Status: Milestone 0.3 Complete
 
-## ⚙️ Core Technology Stack
+The core infrastructure is fully operational, and the database is populated with initial data.
 
-| Component | Technology | Role |
+| Milestone | Status | Description |
 | :--- | :--- | :--- |
-| **Backend** | Python 3.11, Django 4.x | Web framework |
-| **GraphQL** | Graphene-Django | Schema and API exposure |
-| **Database** | PostgreSQL | Data persistence |
-| **Containerization** | Docker, Docker Compose | Development and Production deployment |
-| **Web Server** | Gunicorn | Production WSGI server |
+| **0.1** | ✅ Complete | Docker, Database, and API connectivity verified. |
+| **0.2** | ✅ Complete | Core database schema (`Figure`, `Field`, etc.) created via migrations. |
+| **0.3** | ✅ Complete | **Initial MVP Data Loaded.** The database is populated with figures and relationships using the `load_mvp_data` management command. |
 
-## 🛠️ Deployment and Usage
+**Next Focus: Milestone 1.0 - API Implementation** (Implementing the GraphQL schema to expose the loaded data).
+
+## 💻 Local Development Setup (Production Environment)
 
 ### Prerequisites
 
-  * Docker and Docker Compose installed on your host machine.
-  * The project directory (`ChronosAtlas`) containing the `Dockerfile`, `docker-compose.prod.yml`, and application code.
+* Docker
+* Docker Compose
 
-### 1\. Launch the Stack (Build, Migrate, and Run)
+### 1. File Setup
 
-This command builds the final image, pulls the PostgreSQL image, and starts both services in detached mode. The custom `entrypoint.sh` will ensure all migrations are applied.
+Ensure the following files are in place:
 
-```bash
-docker compose -f docker-compose.prod.yml up -d --build
-```
+* **`docker-compose.prod.yml`**: Defines the services and critical volume mounts.
+* **`.env.prod`**: Contains production environment variables (e.g., database credentials).
+* **`data/historical_figures_normalized.csv`**: The data file needed for the initial load.
 
-### 2\. Verify Health
+### 2. Startup
 
-Wait about 15 seconds for the database and application to fully initialize, then check the running containers:
-
-```bash
-docker ps
-```
-
-You should see both `chronos_api` and `chronos_db` running.
-
-### 3\. Test the GraphQL Endpoint
-
-The API is available at `http://localhost:8080/graphql/`. Use a cURL command (or a tool like Insomnia/Postman) to perform a test mutation:
+Build and start the services defined in the production compose file. This will spin up the `api` (Django) and `db` (PostgreSQL) containers.
 
 ```bash
-curl -X POST http://localhost:8080/graphql/ \
-     -H 'Content-Type: application/json' \
-     --data-raw '{
-         "query": "mutation createEvent($input: TimelineEventInput!) { createTimelineEvent(input: $input) { timelineEvent { id title year category description } } }",
-         "variables": {
-             "input": {
-                 "title": "Battle of Thermopylae",
-                 "year": -480,
-                 "category": "Military Conflict",
-                 "description": "A battle in the Greco-Persian Wars where a small force of Greeks held a pass against a much larger Persian army."
-             }
-         }
-     }'
+docker compose -f docker-compose.prod.yml up -d
 ```
 
-### 4\. Shut Down
+### 3\. Database Initialization & Data Load
 
-To stop and remove containers, networks, and ephemeral volumes:
+The following steps set up the database schema and load the initial MVP dataset.
 
-```bash
-docker compose -f docker-compose.prod.yml down
-```
+| Step | Command | Description |
+| :--- | :--- | :--- |
+| **a. Run Migrations** | `docker compose -f docker-compose.prod.yml run --rm api python manage.py migrate --settings=ChronosAtlas.settings_prod` | Creates all necessary tables (`Figure`, `Field`, `Influence`, etc.). |
+| **b. Load Data** | `docker compose -f docker-compose.prod.yml run --rm api python manage.py load_mvp_data --settings=ChronosAtlas.settings_prod` | Populates the database with the initial 8 figures and their relationships. |
 
 -----
 
-## ⚠️ Known Issues and Resolved Debugging
+## 🛑 Important Configuration Notes
 
-This section highlights crucial configuration steps that were required to achieve the current stable state.
+### Database Credentials
 
-### Resolved Issues
+Database credentials are read from `.env.prod`. They must match the configuration within `docker-compose.prod.yml`.
 
-| Issue | Resolution |
+| Variable | Value |
 | :--- | :--- |
-| **Database Connection Failure** | Verified and ensured the `DATABASE_URL` format was correct (`postgres://user:pass@host:port/name`). |
-| **Table Not Found Error** | The initial fix required manually overriding the container's entrypoint to successfully generate and commit missing local migration files (`0001_initial.py` for `figures` and `timeline`). |
-| **`ImproperlyConfigured`** | Ensured the `DATABASE_URL` environment variable was correctly passed to the temporary container when running one-off commands like `makemigrations`. |
-| **Gunicorn Connection Reset** | Resolved a crash likely caused by the database issues, confirming that the application now starts and services requests without error. |
+| `DB_NAME` | `chronosatlas` |
+| `DB_USER` | `chronosuser` |
+| `DB_PASSWORD` | `chronospassword` |
+| `DB_HOST` | `db` (The service name) |
 
------
+### Volume Mounts
 
-## 🗓️ Future Plans and Roadmap
+The following critical volume mounts ensure the application and data files are available inside the container:
 
-1.  **Authentication and Authorization:** Implement Django's built-in user system and integrate it with GraphQL using Graphene.
-2.  **Media Storage:** Set up Amazon S3 or a similar cloud storage solution for user-uploaded figure images, using Django Storages.
-3.  **Client Application:** Develop a frontend client (e.g., React or Vue) to consume the GraphQL API.
-4.  **Testing Suite:** Implement unit and integration tests for all models and resolvers.
-
------
-
-## 💻 Code Changes Included in This Update
-
-  * New migration files: `figures/migrations/0001_initial.py` and `timeline/migrations/0001_initial.py`.
-  * Any necessary changes to the `Dockerfile`, `docker-compose.prod.yml`, or `entrypoint.sh` related to the debugging process (e.g., ensuring `migrate` runs correctly).
+  * `.:/app`: Maps the project root to the container's working directory.
+  * `./data:/app/data`: Maps the local `./data` folder to the expected `/app/data` path for data loading scripts.
