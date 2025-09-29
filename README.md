@@ -92,3 +92,46 @@ The following critical volume mounts ensure the application and data files are a
 ### Usage
 - Make sure to use the correct Docker Compose file and `.env` file for your environment.
 - The legacy `settings.py` has been removed for clarity.
+
+## 🧪 API Usage & Frontend Simulator
+
+### GraphQL Endpoint
+- URL: `http://localhost:8000/graphql/`
+- Test queries and mutations using the built-in GraphiQL IDE or the included `frontend_simulator.html`.
+
+### REST API Endpoints
+- Figures: `http://localhost:8000/api/figures/`
+- Timeline Events: `http://localhost:8000/api/timeline/`
+- Influences: `http://localhost:8000/api/influences/`
+
+### Frontend Simulator
+Open `frontend_simulator.html` in your browser to test both GraphQL and REST endpoints interactively. It provides:
+- GraphQL query editor and response viewer
+- REST API selector and response viewer
+
+### Sample Data
+Sample fixtures are provided and loaded automatically:
+- Figures: `figures/fixtures/sample_figures.json`
+- Timeline Events: `timeline/fixtures/sample_timeline.json`
+
+## ✅ Problems Solved This Session
+- Modularized Django settings for dev/prod/default
+- Fixed Docker Compose and environment variable issues
+- Ensured static files are served in production (WhiteNoise)
+- REST API endpoints return JSON, not templates
+- GraphQL IDE and API endpoints are accessible
+- Added sample data and frontend simulator for easy testing
+
+## 📝 Next Steps & TODOs
+- Expand GraphQL schema and mutations for full CRUD
+- Add more sample data and fixtures
+- Implement authentication and permissions
+- Modernize admin UI (optional)
+- Add automated tests for models and APIs
+- Document API schema and usage in detail
+
+## 📚 For Next Development Session
+- Review this README and the frontend simulator
+- Test all endpoints and sample data
+- Continue with GraphQL/REST API feature development
+- Refine admin and frontend as needed

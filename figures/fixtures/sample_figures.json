@@ -1,0 +1,26 @@
+[
+  {
+    "model": "figures.figure",
+    "pk": 1,
+    "fields": {
+  "name": "Ada Lovelace",
+  "slug": "ada-lovelace",
+  "wikidata_id": "Q7259",
+  "summary": "First computer programmer.",
+  "normalized_birth_year": 1815,
+  "normalized_death_year": 1852
+    }
+  },
+  {
+    "model": "figures.figure",
+    "pk": 2,
+    "fields": {
+  "name": "Alan Turing",
+  "slug": "alan-turing",
+  "wikidata_id": "Q7251",
+  "summary": "Father of theoretical computer science and AI.",
+  "normalized_birth_year": 1912,
+  "normalized_death_year": 1954
+    }
+  }
+]
