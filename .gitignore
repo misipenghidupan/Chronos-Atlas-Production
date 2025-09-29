@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+*.venv
+venv/
+ENV/
+env/
+
+# Django
+*.sqlite3
+*.log
+staticfiles/
+media/
+
+# VS Code
+.vscode/
+
+# Docker
+*.pid
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test/coverage
+.coverage
+htmlcov/
+
+# Misc
+*.bak
+*.swp
+
+# Ignore environment files
+.env
+.env.*
+
+# Ignore data files
+/data/
+
+# Ignore compiled files
+*.so
+
+# Ignore node modules (if any)
+node_modules/
