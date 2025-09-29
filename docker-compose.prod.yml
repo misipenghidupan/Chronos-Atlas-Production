@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: chronos_db
+    # This explicitly sets the credentials for the database service.
+    environment:
+      POSTGRES_USER: chronosuser
+      POSTGRES_PASSWORD: chronospassword # <--- MUST MATCH DATABASE_URL
+      POSTGRES_DB: chronosatlas
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+
+  api:
+    build: .
+    container_name: chronos_api
+    volumes:
+  # CHANGE THIS LINE: from .:/usr/src/app to .:/app
+    - .:/app
+    - ./data:/app/data
+    ports:
+      - "8080:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: ChronosAtlas.settings_prod
+      DB_NAME: chronosatlas
+      DB_USER: chronos_user
+      DB_PASSWORD: chronos_pass
+      DB_HOST: db
+      DB_PORT: 5432
+      # SECRET_KEY and DEBUG are handled via .env and python-decouple
+    depends_on:
+      - db
+    restart: always
+
+volumes:
+  postgres_data:

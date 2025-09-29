@@ -1,8 +1,9 @@
-Django>=4.2
-psycopg2-binary>=2.9
-graphene-django>=3.0
-python-decouple>=3.8
-
-# Phase 2 (to be uncommented later)
-celery>=5.3
-redis>=5.0
+Django==5.0.0
+django-environ==0.11.2
+graphene-django==3.1.2
+psycopg2-binary==2.9.9
+whitenoise==6.6.0
+django-cors-headers==4.3.1  # <-- NEW: For frontend testing
+dj-database-url==1.2.0
+gunicorn
+djangorestframework

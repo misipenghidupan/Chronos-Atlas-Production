@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronosAtlas GraphQL Tester</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for responsiveness and appearance */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+        }
+        .container {
+            max-width: 1200px;
+        }
+        textarea {
+            resize: none;
+            min-height: 250px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto bg-white shadow-xl rounded-xl p-6 md:p-10">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">ChronosAtlas API Frontend Simulator</h1>
+        <p class="text-gray-600 mb-6">
+            Use this interface to test the deployed Django/Graphene API (GraphQL and REST). Ensure your Docker services are running and accessible.
+        </p>
+        <!-- REST API Section -->
+        <div class="mb-8">
+            <label for="restEndpoint" class="block text-sm font-medium text-gray-700 mb-2">REST API Endpoint:</label>
+            <select id="restEndpoint" class="w-full p-3 border border-gray-300 rounded-lg mb-2">
+                <option value="figures">Figures</option>
+                <option value="timeline">Timeline Events</option>
+                <option value="influences">Influences</option>
+            </select>
+            <button id="sendRestBtn"
+                    class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-150 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50">
+                Fetch REST Data
+            </button>
+            <span id="restStatusMessage" class="text-sm font-medium text-gray-500 ml-4">Ready.</span>
+            <label for="restResponseTextarea" class="block text-lg font-bold text-gray-800 mt-4 mb-2">REST API Response:</label>
+            <textarea id="restResponseTextarea" readonly
+                      class="w-full p-4 border border-gray-300 rounded-lg bg-gray-800 text-green-400 text-sm font-mono overflow-auto"
+                      style="min-height: 200px;"
+                      placeholder="REST response will appear here..."></textarea>
+        </div>
+
+        <!-- API Configuration -->
+        <div class="mb-6">
+            <label for="apiUrl" class="block text-sm font-medium text-gray-700 mb-2">GraphQL Endpoint URL:</label>
+            <input type="text" id="apiUrl" value="http://localhost:8000/graphql/"
+                   class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 shadow-sm"
+                   placeholder="e.g., http://localhost:8000/graphql/">
+        </div>
+
+        <!-- Query Section -->
+        <div class="mb-6">
+            <label for="queryTextarea" class="block text-sm font-medium text-gray-700 mb-2">GraphQL Query:</label>
+            <textarea id="queryTextarea"
+                      class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 text-sm"
+                      placeholder="Enter your GraphQL query here...">
+query ComprehensiveMVPTest {
+  figures { # Confirmed working name from Introspection
+    id
+    name
+    birthYear
+    deathYear
+    description
+  }
+  timelineEvents { # Assumed name after fixing backend schema
+    id
+    title
+    year
+    category
+    description
+  }
+}
+            </textarea>
+        </div>
+
+        <!-- Action Button and Status -->
+        <div class="flex items-center space-x-4 mb-8">
+            <button id="sendQueryBtn"
+                    class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50">
+                Send Query
+            </button>
+            <span id="statusMessage" class="text-sm font-medium text-gray-500">Ready.</span>
+        </div>
+        
+        <!-- Response Section -->
+        <div>
+            <label for="responseTextarea" class="block text-lg font-bold text-gray-800 mb-2">GraphQL Response:</label>
+            <textarea id="responseTextarea" readonly
+                      class="w-full p-4 border border-gray-300 rounded-lg bg-gray-800 text-green-400 text-sm font-mono overflow-auto"
+                      style="min-height: 350px;"
+                      placeholder="Response will appear here..."></textarea>
+        </div>
+
+    </div>
+
+    <script>
+        // REST API Tester
+        const sendRestBtn = document.getElementById('sendRestBtn');
+        const restEndpointSelect = document.getElementById('restEndpoint');
+        const restResponseTextarea = document.getElementById('restResponseTextarea');
+        const restStatusMessage = document.getElementById('restStatusMessage');
+
+        sendRestBtn.addEventListener('click', async () => {
+            const endpoint = restEndpointSelect.value;
+            const url = `http://localhost:8000/api/${endpoint}/`;
+            restStatusMessage.textContent = "Fetching...";
+            restStatusMessage.className = "text-sm font-medium text-green-500 animate-pulse";
+            restResponseTextarea.value = "Loading...";
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                restResponseTextarea.value = JSON.stringify(data, null, 2);
+                if (response.ok) {
+                    restStatusMessage.textContent = `Success! (Status ${response.status})`;
+                    restStatusMessage.className = "text-sm font-medium text-green-600";
+                } else {
+                    restStatusMessage.textContent = `API Error! (Status ${response.status})`;
+                    restStatusMessage.className = "text-sm font-medium text-yellow-500";
+                }
+            } catch (error) {
+                restResponseTextarea.value = JSON.stringify({ error: error.message }, null, 2);
+                restStatusMessage.textContent = "Connection Failed!";
+                restStatusMessage.className = "text-sm font-medium text-red-600";
+            }
+        });
+        const sendQueryBtn = document.getElementById('sendQueryBtn');
+        const apiUrlInput = document.getElementById('apiUrl');
+        const queryTextarea = document.getElementById('queryTextarea');
+        const responseTextarea = document.getElementById('responseTextarea');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // Function to copy text to clipboard
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
+
+        sendQueryBtn.addEventListener('click', async () => {
+            const apiUrl = apiUrlInput.value.trim();
+            const query = queryTextarea.value.trim();
+
+            if (!apiUrl || !query) {
+                responseTextarea.value = "Error: API URL and query cannot be empty.";
+                statusMessage.textContent = "Error occurred.";
+                statusMessage.className = "text-sm font-medium text-red-500";
+                return;
+            }
+
+            statusMessage.textContent = "Sending query...";
+            statusMessage.className = "text-sm font-medium text-indigo-500 animate-pulse";
+            responseTextarea.value = "Loading...";
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ query }),
+                });
+
+                const data = await response.json();
+                
+                // Format the JSON response nicely
+                const formattedData = JSON.stringify(data, null, 2);
+
+                responseTextarea.value = formattedData;
+                
+                if (response.ok) {
+                    statusMessage.textContent = "Success! (Status " + response.status + ")";
+                    statusMessage.className = "text-sm font-medium text-green-600";
+                } else {
+                    statusMessage.textContent = "API Error! (Status " + response.status + ")";
+                    statusMessage.className = "text-sm font-medium text-yellow-500";
+                }
+
+            } catch (error) {
+                const errorMessage = `Fetch Error: ${error.message}. Check if the API service is running and the URL is correct.`;
+                responseTextarea.value = JSON.stringify({ error: errorMessage }, null, 2);
+                statusMessage.textContent = "Connection Failed!";
+                statusMessage.className = "text-sm font-medium text-red-600";
+            }
+        });
+    </script>
+</body>
+</html>
