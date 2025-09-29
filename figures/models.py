@@ -27,7 +27,7 @@ class Figure(models.Model):
     normalized_death_year = models.IntegerField(null=True, blank=True)
     
     # Taxonomy and Filtering Fields
-    instance_of_QIDs = ArrayField(models.CharField(max_length=20), default=list, blank=True)
+    instance_of_QIDs = models.JSONField(default=list, blank=True)
     
     # CRITICAL ADDITION: ManyToMany field needed by load_mvp_data.py
     fields = models.ManyToManyField('Field', related_name='figures')

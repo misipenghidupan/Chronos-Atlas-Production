@@ -4,8 +4,8 @@
 set -e
 
 # --- 0. Set Django Settings Module ---
-# Ensures all Python commands use the correct production settings.
-export DJANGO_SETTINGS_MODULE=ChronosAtlas.settings_prod
+# Use environment variable if set, otherwise fallback to default settings.
+export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-ChronosAtlas.settings_default}"
 
 # --- 1. Use hardcoded DB credentials for pg_isready ---
 # These MUST match the 'db' service credentials in docker-compose.prod.yml

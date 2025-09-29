@@ -17,13 +17,11 @@ services:
     container_name: chronos_api
     volumes:
   # CHANGE THIS LINE: from .:/usr/src/app to .:/app
-    - .:/app 
+    - .:/app
     - ./data:/app/data
-      
     ports:
-      - "8080:8000"  
-    # This is the file we just created
-    env_file:
+      - "8080:8000"
+    environment:
       DJANGO_SETTINGS_MODULE: ChronosAtlas.settings_prod
       DB_NAME: chronosatlas
       DB_USER: chronos_user
@@ -31,6 +29,7 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       # SECRET_KEY and DEBUG are handled via .env and python-decouple
+    depends_on:
       - db
     restart: always
 

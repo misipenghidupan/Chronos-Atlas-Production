@@ -7,7 +7,7 @@ import sys
 def main():
     """Run administrative tasks."""
     # Ensure this points to your main settings file
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ChronosAtlas.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ChronosAtlas.settings_dev')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

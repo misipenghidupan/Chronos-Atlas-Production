@@ -71,3 +71,24 @@ The following critical volume mounts ensure the application and data files are a
 
   * `.:/app`: Maps the project root to the container's working directory.
   * `./data:/app/data`: Maps the local `./data` folder to the expected `/app/data` path for data loading scripts.
+
+## 🧩 Environment Structure
+
+### Django Settings
+- `settings_base.py`: Shared settings for all environments.
+- `settings_dev.py`: Development overrides (DEBUG=True, SQLite).
+- `settings_prod.py`: Production overrides (DEBUG=False, PostgreSQL).
+- `settings_default.py`: Default/local settings.
+
+### Docker Compose Files
+- `docker-compose.yml`: Default/local environment (uses `settings_default.py`).
+- `docker-compose.dev.yml`: Development environment (uses `settings_dev.py`).
+- `docker-compose.prod.yml`: Production environment (uses `settings_prod.py`).
+
+### Environment Variable Files
+- `.env`: Local/dev environment variables.
+- `.env.prod`: Production environment variables.
+
+### Usage
+- Make sure to use the correct Docker Compose file and `.env` file for your environment.
+- The legacy `settings.py` has been removed for clarity.

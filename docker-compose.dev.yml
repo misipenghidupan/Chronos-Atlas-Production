@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   db:
     image: postgres:14-alpine
@@ -26,10 +25,8 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: ChronosAtlas.settings_dev
       DB_NAME: chronosatlas
-      DB_USER: chronos_user
-      DB_PASSWORD: chronos_pass
       DB_HOST: db
-      DB_PORT: 5432
-
+      DB_USER: chronosuser
+      DB_PASSWORD: chronospassword
 volumes:
   postgres_data:
