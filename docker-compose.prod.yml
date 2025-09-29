@@ -24,12 +24,13 @@ services:
       - "8080:8000"  
     # This is the file we just created
     env_file:
-      - .env.prod
-    # This is the variable used by Django/psycopg2 to connect.
-    # It must match the credentials defined in the 'db' service above.
-    environment:
-      DATABASE_URL: postgres://chronosuser:chronospassword@db:5432/chronosatlas
-    depends_on:
+      DJANGO_SETTINGS_MODULE: ChronosAtlas.settings_prod
+      DB_NAME: chronosatlas
+      DB_USER: chronos_user
+      DB_PASSWORD: chronos_pass
+      DB_HOST: db
+      DB_PORT: 5432
+      # SECRET_KEY and DEBUG are handled via .env and python-decouple
       - db
     restart: always
 

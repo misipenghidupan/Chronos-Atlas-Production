@@ -1,6 +1,6 @@
 import os
-import dj_database_url # <--- ADDED: Imports the database utility
-from .settings import * # Import base settings first
+import dj_database_url
+from .settings_base import *
 
 # Standard Production Settings Overrides
 DEBUG = False

@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: chronosatlas_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: chronosatlas
+      POSTGRES_USER: chronos_user
+      POSTGRES_PASSWORD: chronos_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  api:
+    build: .
+    container_name: chronosatlas_api_dev
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8081:8000"
+    depends_on:
+      - db
+    environment:
+      DJANGO_SETTINGS_MODULE: ChronosAtlas.settings_dev
+      DB_NAME: chronosatlas
+      DB_USER: chronos_user
+      DB_PASSWORD: chronos_pass
+      DB_HOST: db
+      DB_PORT: 5432
+
+volumes:
+  postgres_data:

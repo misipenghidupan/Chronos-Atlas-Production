@@ -25,6 +25,7 @@ services:
     depends_on:
       - db
     environment:
+      DJANGO_SETTINGS_MODULE: ChronosAtlas.settings_default
       DB_NAME: chronosatlas
       DB_USER: chronos_user
       DB_PASSWORD: chronos_pass
