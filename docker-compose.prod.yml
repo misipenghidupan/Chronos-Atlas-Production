@@ -1,37 +1,25 @@
 services:
-  db:
-    image: postgres:14-alpine
-    container_name: chronos_db
-    # This explicitly sets the credentials for the database service.
-    environment:
-      POSTGRES_USER: chronosuser
-      POSTGRES_PASSWORD: chronospassword # <--- MUST MATCH DATABASE_URL
-      POSTGRES_DB: chronosatlas
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    ports:
-      - "5432:5432"
-
   api:
-    build: .
-    container_name: chronos_api
-    volumes:
-  # CHANGE THIS LINE: from .:/usr/src/app to .:/app
-    - .:/app 
-    - ./data:/app/data
+    # 1. Production Command: Run Gunicorn (copied from your old entrypoint.sh)
+    command: gunicorn ChronosAtlas.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120 --error-logfile - --log-level info
+    
+    # 2. Production Settings Module
+    environment:
+      - DJANGO_SETTINGS_MODULE=ChronosAtlas.settings.prod
       
-    ports:
-      - "8080:8000"  
-    # This is the file we just created
+    # 3. Production Volumes (Only mount data/static directories, not source code)
+    # Assumes you want to persist collected static files or user data.
+    volumes:
+      - ./staticfiles:/app/staticfiles 
+      # Add other production-related volumes here (e.g., user-uploaded media)
+      
+    # 4. Use a secure production .env file
     env_file:
       - .env.prod
-    # This is the variable used by Django/psycopg2 to connect.
-    # It must match the credentials defined in the 'db' service above.
-    environment:
-      DATABASE_URL: postgres://chronosuser:chronospassword@db:5432/chronosatlas
-    depends_on:
-      - db
-    restart: always
-
-volumes:
-  postgres_data:
+    
+    # Optional: Increase resource limits for production
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M

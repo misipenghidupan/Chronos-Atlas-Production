@@ -11,6 +11,8 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ChronosAtlas.settings')
+# CRITICAL FIX: Update the settings module path to point to the default settings file.
+# The Docker Compose file will override this with 'ChronosAtlas.settings.prod'
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ChronosAtlas.settings.dev')
 
 application = get_wsgi_application()

@@ -1,54 +1,44 @@
-services:
-  db:
-    image: postgres:14-alpine
-    container_name: chronosatlas_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: chronosatlas
-      POSTGRES_USER: chronos_user
-      POSTGRES_PASSWORD: chronos_pass
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+version: '3.8'
 
+# This file contains the shared configuration (Build, DB setup, Networks)
+# It now defines the PRODUCTION command as the default, which will be overridden 
+# by docker-compose.dev.yml when running development.
+
+services:
   api:
     build: .
-    container_name: chronosatlas_api
-    # This command uses the entrypoint.sh script which handles migrations/static files.
-    # The final exec in the entrypoint starts the runserver command:
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app
-    ports:
-      - "8080:8000"
+    restart: always
     depends_on:
       - db
-    environment:
-      DB_NAME: chronosatlas
-      DB_USER: chronos_user
-      DB_PASSWORD: chronos_pass
-      DB_HOST: db
-      DB_PORT: 5432
-      # SECRET_KEY and DEBUG are handled via .env and python-decouple
       
-  # ----------------------------------------------------
-  # Phase 2 (Performance & Scaling) – placeholders
-  # ----------------------------------------------------
-  # redis:
-  #   image: redis:7-alpine
-  #   container_name: chronosatlas_redis
-  #   restart: unless-stopped
-  #
-  # worker:
-  #   build: .
-  #   container_name: chronosatlas_worker
-  #   command: celery -A ChronosAtlas worker -l info
-  #   volumes:
-  #     - .:/app
-  #   depends_on:
-  #     - db
-  #     - redis
+    # CRITICAL FIX: Define the production command as the default.
+    # This prevents the 'exec "$@"' in entrypoint.sh from being empty.
+    command: gunicorn ChronosAtlas.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120 --error-logfile - --log-level info
 
+    # CRITICAL FIX: Define the production settings as the default.
+    environment:
+      - DJANGO_SETTINGS_MODULE=ChronosAtlas.settings.prod
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=chronosuser
+      - DB_NAME=chronosatlas
+      
+    # Dev mode will add 'ports' and override 'command' and 'DJANGO_SETTINGS_MODULE'
+
+    # Use a base .env file for secrets that might be shared (like a base SECRET_KEY)
+    env_file:
+      - .env
+      
+  db:
+    image: postgres:14.19-alpine
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      # These credentials MUST match the defaults used in the entrypoint.sh script
+      - POSTGRES_DB=chronosatlas
+      - POSTGRES_USER=chronosuser
+      - POSTGRES_PASSWORD=chronospassword
+      
 volumes:
   postgres_data:

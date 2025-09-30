@@ -3,17 +3,19 @@
 # Fail immediately if any command fails
 set -e
 
-# --- 0. Set Django Settings Module ---
-# Ensures all Python commands use the correct production settings.
-export DJANGO_SETTINGS_MODULE=ChronosAtlas.settings_prod
+# --- 0. NO HARDCODED SETTINGS ---
+# We deliberately REMOVE the line 'export DJANGO_SETTINGS_MODULE=...'
+# The correct settings file (dev or prod) will be read from the environment 
+# variables passed by the specific docker-compose override file.
 
-# --- 1. Use hardcoded DB credentials for pg_isready ---
-# These MUST match the 'db' service credentials in docker-compose.prod.yml
-DB_HOST="db"
-DB_PORT="5432"
-DB_USER="chronosuser"
-PGPASSWORD="chronospassword"
-DB_NAME="chronosatlas"
+# --- 1. Use environment variables for DB credentials (from docker-compose) ---
+# Ensure default environment variables are set for safety if they aren't provided
+# Using : before the variable to ensure the default is set if the variable is missing
+: "${DB_HOST:=db}"
+: "${DB_PORT:=5432}"
+: "${DB_USER:=chronosuser}"
+: "${PGPASSWORD:=chronospassword}"
+: "${DB_NAME:=chronosatlas}"
 
 # --- 2. Wait for PostgreSQL to be ready ---
 echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT..."
@@ -24,20 +26,17 @@ until PGPASSWORD=$PGPASSWORD pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER
     sleep 1
 done
 
-echo "PostgreSQL is up and running! Proceeding to server startup."
+echo "PostgreSQL is up and running! Proceeding to setup."
 
 # --- 3. Run migrations and collect static files ---
+# These commands now rely entirely on the DJANGO_SETTINGS_MODULE 
+# environment variable being set correctly by Docker Compose.
 echo "Running migrations..."
-# --noinput prevents interactive prompts (like the one for 'figures' app)
 python manage.py migrate --noinput
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
-# --- 4. Execute the Main Command: Start Gunicorn Server ---
-echo "Starting Gunicorn server..."
-exec python -m gunicorn ChronosAtlas.wsgi:application \
-    --bind 0.0.0.0:8000 \
-    --workers 4 \
-    --timeout 120 \
-    --error-logfile - \
-    --log-level debug
+# --- 4. Execute the Main Command: (Starts runserver or gunicorn) ---
+# The "$@" variable holds the 'command' defined in the specific docker-compose file.
+echo "Executing main Docker command: $@"
+exec "$@"

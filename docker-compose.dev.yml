@@ -1,0 +1,26 @@
+services:
+  api:
+    # 1. Development Command: Run Django's built-in server
+    command: python manage.py runserver 0.0.0.0:8000
+    
+    # 2. Development Settings Module
+    environment:
+      - DJANGO_SETTINGS_MODULE=ChronosAtlas.settings.dev
+      - SECRET_KEY=insecure-dev-key
+      
+    # 3. Code Volume Mount: Mounts the local code for hot reloading
+    volumes:
+      - .:/app
+      
+    # 4. Port Exposure for Local Browser Access
+    ports:
+      - "8080:8000"
+      
+    # 5. Use the development .env file
+    env_file:
+      - .env.dev
+      
+  # Optional: Expose the DB port for local tools (like pgAdmin)
+  #  db:
+  #    ports:
+  #      - "5432:5432"
