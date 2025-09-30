@@ -35,7 +35,7 @@ python manage.py collectstatic --noinput
 
 # --- 4. Execute the Main Command ---
 # This logic checks if any command was passed to the entrypoint.
-# If arguments exist (e.g., `python manage.py load_mvp_data`), it executes them.
+# If arguments exist (e.g., `python manage.py runserver`), it executes them.
 # If no arguments are provided, it defaults to starting the Gunicorn server.
 if [ -n "$1" ]; then
     echo "Executing command: $@"

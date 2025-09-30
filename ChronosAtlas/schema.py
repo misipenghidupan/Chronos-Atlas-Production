@@ -1,20 +1,16 @@
 import graphene
-# Import schemas from the individual apps
-from timeline.schema import TimelineQuery, TimelineMutation
-from figures.schema import FigureQuery, FigureMutation
+import figures.schema
+import timeline.schema
 
-# Combine all application queries into a single root Query
-class Query(TimelineQuery, FigureQuery, graphene.ObjectType):
-    """The root query for the ChronosAtlas GraphQL API."""
-    # Note: Fields are inherited from TimelineQuery and FigureQuery
+# 1. Combine the app-specific queries into a single root Query.
+# The order of inheritance matters if there are conflicting field names.
+class Query(
+    figures.schema.Query,
+    timeline.schema.Query,
+    graphene.ObjectType
+):
+    # This class will inherit the fields from the other query classes.
     pass
 
-# Combine all application mutations into a single root Mutation
-class Mutation(TimelineMutation, FigureMutation, graphene.ObjectType):
-    """The root mutation for the ChronosAtlas GraphQL API."""
-    # Note: Fields are inherited from TimelineMutation (createTimelineEvent) 
-    # and FigureMutation (createFigure)
-    pass
-
-# Create the final schema object, referenced in settings.py
-schema = graphene.Schema(query=Query, mutation=Mutation)
+# 2. Create the final schema object that Graphene-Django will use.
+schema = graphene.Schema(query=Query)

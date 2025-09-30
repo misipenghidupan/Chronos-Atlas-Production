@@ -1,32 +1,34 @@
+version: "3.9"
+
 services:
   db:
     image: postgres:14-alpine
-    container_name: chronosatlas_db
+    container_name: chronosatlas_db_dev
     restart: unless-stopped
     environment:
+      # These credentials should match the ones used in your settings_dev.py if it connects to Postgres
       POSTGRES_DB: chronosatlas
-      POSTGRES_USER: chronos_user
-      POSTGRES_PASSWORD: chronos_pass
+      POSTGRES_USER: chronosuser
+      POSTGRES_PASSWORD: chronospassword
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_dev_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
   api:
     build: .
     container_name: chronosatlas_api_dev
+    # This command is passed to the entrypoint.sh script, which will execute it instead of Gunicorn.
+    # This starts the Django development server, which provides hot-reloading.
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - .:/app # Mounts your local code into the container for live updates
     ports:
-      - "8081:8000"
+      - "8081:8000" # Maps container port 8000 to host port 8081 for dev
     depends_on:
       - db
     environment:
       DJANGO_SETTINGS_MODULE: ChronosAtlas.settings_dev
-      DB_NAME: chronosatlas
-      DB_HOST: db
-      DB_USER: chronosuser
-      DB_PASSWORD: chronospassword
+
 volumes:
-  postgres_data:
+  postgres_dev_data:

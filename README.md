@@ -2,43 +2,42 @@
 
 ## 🌍 Overview
 
-Chronos Atlas is a timeline-focused API designed to provide historical data on figures, their contributions (Fields), and their influence relationships. The API is built using **Django**, **Django REST Framework (DRF)**, **Graphene-Django (GraphQL)**, and **PostgreSQL**.
+Chronos Atlas is a data-driven API designed to serve historical data for an interactive timeline visualization. It provides rich context on historical figures, their fields of work, and their intellectual influence, with a focus on high performance and scalability.
 
 The project is containerized using **Docker** and **Docker Compose** for a consistent production environment.
 
-## 🚀 Status: Milestone 0.3 Complete
+## ✨ Key Features
 
-The core infrastructure is fully operational, and the database is populated with initial data.
+*   **Dual API Support:** Provides both a flexible **GraphQL** API (via Graphene-Django) for complex queries and standard **REST** endpoints (via DRF) for simple data retrieval.
+*   **Optimized Data Model:** Tracks figures, timeline events, and influence relationships with a schema optimized for time-series queries.
+*   **Containerized Environment:** Uses Docker and Docker Compose for reproducible development and production setups.
+*   **Modular Settings:** Cleanly separates configuration for development, production, and local environments.
 
-| Milestone | Status | Description |
-| :--- | :--- | :--- |
-| **0.1** | ✅ Complete | Docker, Database, and API connectivity verified. |
-| **0.2** | ✅ Complete | Core database schema (`Figure`, `Field`, etc.) created via migrations. |
-| **0.3** | ✅ Complete | **Initial MVP Data Loaded.** The database is populated with figures and relationships using the `load_mvp_data` management command. |
+## 🛠️ Technology Stack
 
-**Next Focus: Milestone 1.0 - API Implementation** (Implementing the GraphQL schema to expose the loaded data).
+| Layer | Technology |
+| :--- | :--- |
+| **Backend** | Python, Django |
+| **Database** | PostgreSQL |
+| **GraphQL API** | Graphene-Django |
+| **REST API** | Django REST Framework |
+| **Deployment** | Docker, Gunicorn |
 
-## 💻 Local Development Setup (Production Environment)
+## 🚀 Getting Started (Development Environment)
+
+This guide will get a local development instance of the project up and running.
 
 ### Prerequisites
-
 * Docker
 * Docker Compose
 
-### 1. File Setup
+### 1. Environment Configuration
+This project uses separate Docker Compose files for different environments. For local development, we will use `docker-compose.dev.yml`. This setup provides hot-reloading for code changes.
 
-Ensure the following files are in place:
-
-* **`docker-compose.prod.yml`**: Defines the services and critical volume mounts.
-* **`.env.prod`**: Contains production environment variables (e.g., database credentials).
-* **`data/historical_figures_normalized.csv`**: The data file needed for the initial load.
-
-### 2. Startup
-
-Build and start the services defined in the production compose file. This will spin up the `api` (Django) and `db` (PostgreSQL) containers.
-
+### 2. Build and Run the Services
+From the project root, run the following command to build the images and start the `api` and `db` containers.
 ```bash
-docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.dev.yml up --build -d
 ```
 
 ### 3\. Database Initialization & Data Load

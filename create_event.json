@@ -1,3 +1,0 @@
-{
-    "query": "mutation CreateEventMutation { createTimelineEvent(input: {title: \"First AC Power Plant\", year: 1895, category: \"Technology\", description: \"Niagara Falls hydroelectric power plant begins operation.\" }) { timelineEvent { id title year } } }"
-  }

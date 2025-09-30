@@ -15,7 +15,7 @@ services:
   api:
     build: .
     container_name: chronos_api
-    volumes:
+    volumes:  
   # CHANGE THIS LINE: from .:/usr/src/app to .:/app
     - .:/app
     - ./data:/app/data

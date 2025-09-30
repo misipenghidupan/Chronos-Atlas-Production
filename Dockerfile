@@ -53,7 +53,7 @@
     
     # Ensure entrypoint.sh is executable and copy it to the bin directory
     # Note: The entrypoint script path must match the ENTRYPOINT instruction below.
-    COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+    COPY scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
     RUN chmod +x /usr/local/bin/entrypoint.sh
     
     # Expose the application port

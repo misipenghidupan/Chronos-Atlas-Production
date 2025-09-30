@@ -1,3 +1,0 @@
-{
-    "query": "query TestDataQuery { figures { id name } timelineEvents { id title } }"
-  }
