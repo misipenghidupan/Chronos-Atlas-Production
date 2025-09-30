@@ -1,63 +1,96 @@
 # Chronos Atlas: Detailed Documentation
 
-This document provides detailed technical information about the project's environment, configuration, and API usage.
+This document provides a comprehensive guide to the Chronos Atlas project, including setup, configuration, API usage, and development details.
 
-## 🧩 Environment Structure
+## 🚀 Getting Started (Development Environment)
 
-The project is configured to support multiple environments through a modular structure.
+This guide will get a local development instance of the project up and running.
 
-### Django Settings
-- **`settings_base.py`**: Contains settings common to all environments.
-- **`settings_dev.py`**: Overrides for local development (`DEBUG=True`, hot-reloading).
-- **`settings_prod.py`**: Overrides for production (`DEBUG=False`, Gunicorn, security settings).
-- **`settings_default.py`**: A fallback or local configuration.
+### Prerequisites
+* Docker
+* Docker Compose
 
-### Docker Compose Files
-- **`docker-compose.dev.yml`**: For the local development environment. Uses Django's development server for hot-reloading.
-- **`docker-compose.prod.yml`**: For the production environment. Uses Gunicorn for a robust, multi-worker setup.
-- **`docker-compose.yml`**: A default configuration, typically used for local setup.
+### 1. Environment Configuration
+This project uses separate Docker Compose files for different environments. For local development, we will use `docker-compose.dev.yml`. This setup provides hot-reloading for code changes.
 
-### Environment Variable Files
-- **`.env`**: Contains local/development environment variables.
-- **`.env.prod`**: Contains production environment variables.
+### 2. Build and Run the Services
+From the project root, run the following command to build the images and start the `api` and `db` containers.
+```bash
+docker compose -f docker-compose.dev.yml up --build -d
+```
+
+### 3. Database Initialization & Data Load
+The following steps set up the database schema and load the initial data.
+
+| Step | Command | Description |
+| :--- | :--- | :--- |
+| **a. Run Migrations** | `docker exec chronosatlas_api_dev python manage.py migrate` | Creates all necessary tables (`Figure`, `Timeline`, etc.). |
+| **b. Load Data** | `docker exec chronosatlas_api_dev python manage.py loaddata figures/fixtures/sample_figures.json` | Populates the database with sample figures. |
+| | `docker exec chronosatlas_api_dev python manage.py loaddata timeline/fixtures/sample_timeline.json` | Populates the database with sample timeline events. |
 
 ---
 
-## 🛑 Production Environment Notes
+## 🧩 Environment Structure
 
-### Database Credentials
+### Django Settings
+- `settings_base.py`: Shared settings for all environments.
+- `settings_dev.py`: Development overrides (DEBUG=True).
+- `settings_prod.py`: Production overrides (DEBUG=False).
+- `settings_default.py`: Default/local settings.
 
-In the production environment (`docker-compose.prod.yml`), database credentials are read from the `.env.prod` file. They must match the configuration within the compose file.
+### Docker Compose Files
+- `docker-compose.dev.yml`: Development environment.
+- `docker-compose.prod.yml`: Production environment.
 
-| Variable | Value |
-| :--- | :--- |
-| `DB_NAME` | `chronosatlas` |
-| `DB_USER` | `chronosuser` |
-| `DB_PASSWORD` | `chronospassword` |
-| `DB_HOST` | `db` (The service name) |
-
-### Volume Mounts
-
-The following critical volume mounts ensure the application and data files are available inside the container:
-
-  * `.:/app`: Maps the project root to the container's working directory.
-  * `./data:/app/data`: Maps the local `./data` folder to the expected `/app/data` path for data loading scripts.
+### Environment Variable Files
+- `.env`: Local/dev environment variables.
+- `.env.prod`: Production environment variables.
 
 ---
 
 ## 🧪 API Usage & Frontend Simulator
 
 ### GraphQL Endpoint
-- **URL (Dev):** `http://localhost:8081/graphql/`
-- **URL (Prod):** `http://localhost:8080/graphql/`
-- **Testing:** Use the built-in GraphiQL IDE or the included `frontend/frontend_simulator.html`.
+- URL: `http://localhost:8081/graphql/`
+- Test queries and mutations using the built-in GraphiQL IDE.
 
 ### REST API Endpoints
-- **Figures:** `/api/figures/`
-- **Timeline Events:** `/api/timeline/`
-- **Influences:** `/api/influences/`
+- Figures: `http://localhost:8081/api/figures/`
+- Timeline Events: `http://localhost:8081/api/timeline/`
 
 ### Frontend Simulator
 Open `frontend/frontend_simulator.html` in your browser to test both GraphQL and REST endpoints interactively. It provides:
 - GraphQL query editor and response viewer
 - REST API selector and response viewer
+
+---
+
+## 🛠️ Development Details
+
+### Multi-stage Dockerfile
+We use a multi-stage `Dockerfile` to create optimized images. The `builder` stage installs dependencies and builds Python wheels, while the `final` stage creates a minimal runtime image, resulting in smaller image sizes and improved security.
+
+### Entrypoint Script
+The `scripts/entrypoint.sh` script is executed when the `api` container starts. It waits for the database to be ready and then runs the main container command.
+
+### Checking Logs
+Since the development server runs in detached (`-d`) mode, you can use the `docker compose logs` command to view its output.
+
+**1. View all logs at once:**
+To see a snapshot of logs from all services (`api` and `db`):
+```bash
+docker compose -f docker-compose.dev.yml logs
+```
+
+**2. Follow logs in real-time (most common):**
+To stream logs live as they happen, use the `-f` or `--follow` flag. This is the best way to monitor your application.
+```bash
+docker compose -f docker-compose.dev.yml logs -f
+```
+*(Press `Ctrl+C` to stop streaming.)*
+
+**3. View logs for a specific service:**
+If you only need to see the logs from the Django `api` container:
+```bash
+docker compose -f docker-compose.dev.yml logs -f api
+```

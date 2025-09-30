@@ -42,10 +42,13 @@ class FigureGraphQLTests(GraphQLTestCase):
         response = self.query(
             """
             query {
-              allFigures {
-                id
-                name
-                normalizedBirthYear
+              allFigures(first: 2) {
+                edges {
+                  node {
+                    name
+                    normalizedBirthYear
+                  }
+                }
               }
             }
             """
@@ -56,14 +59,14 @@ class FigureGraphQLTests(GraphQLTestCase):
 
         # Parse the response content
         content = json.loads(response.content)
-        data = content['data']['allFigures']
+        data = content['data']['allFigures']['edges']
 
         # Assert that the correct number of figures are returned
         self.assertEqual(len(data), 2)
 
         # Assert that the data matches what we created in setUpTestData
-        self.assertEqual(data[0]['name'], 'Test Figure Alpha')
-        self.assertEqual(data[1]['name'], 'Test Figure Beta')
+        self.assertEqual(data[0]['node']['name'], 'Test Figure Alpha')
+        self.assertEqual(data[1]['node']['name'], 'Test Figure Beta')
 
     def test_create_figure_mutation(self):
         """
@@ -93,7 +96,7 @@ class FigureGraphQLTests(GraphQLTestCase):
         }
 
         # 2. Execute the mutation
-        response = self.query(mutation, variables=variables)
+        response = self.query(mutation, input_data=variables["input"])
 
         # 3. Assert the response is successful and contains the new figure's data
         self.assertResponseNoErrors(response)

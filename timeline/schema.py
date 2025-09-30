@@ -1,19 +1,29 @@
 import graphene
 from graphene_django import DjangoObjectType
-from .models import TimelineEvent
+from graphene_django.filter import DjangoFilterConnectionField
+from .models import TimelineEvent, Influence
+from .filters import TimelineEventFilter
+
+# 1. Define the Graphene Type for the Influence model
+class InfluenceType(DjangoObjectType):
+    class Meta:
+        model = Influence
+        fields = ("id", "influencer", "influenced", "description")
+        interfaces = (graphene.relay.Node,)
+        filter_fields = []
 
 # 1. Define the Graphene Type for the TimelineEvent model
 class TimelineEventType(DjangoObjectType):
     class Meta:
         model = TimelineEvent
-        fields = ("id", "title", "year", "category", "description")
+        fields = ("id", "title", "year", "category", "description", "figure")
+        interfaces = (graphene.relay.Node,)
 
 # 2. Define a Query class for the timeline app
 class Query(graphene.ObjectType):
-    # Define a field to get a list of all timeline events
-    all_timeline_events = graphene.List(TimelineEventType)
-
-    # Define the resolver for the all_timeline_events field
-    def resolve_all_timeline_events(root, info):
-        # Return all TimelineEvent objects, letting the model's Meta.ordering handle sorting
-        return TimelineEvent.objects.all()
+    # Use DjangoFilterConnectionField to enable pagination and filtering
+    all_timeline_events = DjangoFilterConnectionField(
+        TimelineEventType, filterset_class=TimelineEventFilter
+    )
+    # Apply pagination to the influences query as well
+    all_influences = DjangoFilterConnectionField(InfluenceType)

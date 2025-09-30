@@ -7,3 +7,4 @@ django-cors-headers==4.3.1  # <-- NEW: For frontend testing
 dj-database-url==1.2.0
 gunicorn
 djangorestframework
+django-filter==24.3
