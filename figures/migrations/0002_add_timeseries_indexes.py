@@ -4,11 +4,11 @@ from django.contrib.postgres.indexes import GistIndex
 from django.contrib.postgres.operations import BtreeGistExtension
 from django.db import migrations
 
+# This custom migration file adds high-performance GiST indexes to
+# the database, fulfilling Milestone 0.2 of the project roadmap.
+# GiST indexes are specifically designed to accelerate range
+# queries, which are essential for a timeline-based application.
 
-# This custom migration file adds high-performance GiST indexes to the database,
-# fulfilling Milestone 0.2 of the project roadmap. GiST indexes are specifically
-# designed to accelerate range queries, which are essential for a timeline-based
-# application.
 
 class Migration(migrations.Migration):
 
@@ -17,16 +17,20 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # This operation enables the 'btree_gist' extension in PostgreSQL, which
-        # is required to create GiST indexes on integer and date fields.
+        # This operation enables the 'btree_gist' extension in
+        # PostgreSQL, which is required to create GiST indexes on
+        # integer and date fields.
         BtreeGistExtension(),
-
-        # This index optimizes queries that filter for figures living within a
-        # specific time range (e.g., "find all figures active between 1800 and 1900").
+        # This index optimizes queries that filter for figures
+        # living within a specific time range (e.g., "find all
+        # figures active between 1800 and 1900").
         migrations.AddIndex(
             model_name="figure",
             index=GistIndex(
-                fields=["normalized_birth_year", "normalized_death_year"],
+                fields=[
+                    "normalized_birth_year",
+                    "normalized_death_year",
+                ],
                 name="figure_lifespan_gist_idx",
             ),
         ),

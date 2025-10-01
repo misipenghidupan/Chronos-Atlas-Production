@@ -1,6 +1,9 @@
 from django.test import TestCase
-from .models import TimelineEvent, Influence
+
 from figures.models import Figure
+
+from .models import Influence, TimelineEvent
+
 
 class TimelineEventModelTest(TestCase):
     def setUp(self):
@@ -8,13 +11,14 @@ class TimelineEventModelTest(TestCase):
             title="Moon Landing",
             year=1969,
             category="Space",
-            description="Apollo 11 landed on the moon."
+            description="Apollo 11 landed on the moon.",
         )
 
     def test_event_creation(self):
         self.assertEqual(self.event.title, "Moon Landing")
         self.assertEqual(self.event.year, 1969)
         self.assertEqual(self.event.category, "Space")
+
 
 class InfluenceModelTest(TestCase):
     def setUp(self):
@@ -24,7 +28,7 @@ class InfluenceModelTest(TestCase):
             wikidata_id="Q935",
             normalized_birth_year=1643,
             normalized_death_year=1727,
-            instance_of_QIDs=["Q5"]
+            instance_of_QIDs=["Q5"],
         )
         self.influenced = Figure.objects.create(
             name="Albert Einstein",
@@ -32,11 +36,10 @@ class InfluenceModelTest(TestCase):
             wikidata_id="Q937",
             normalized_birth_year=1879,
             normalized_death_year=1955,
-            instance_of_QIDs=["Q5"]
+            instance_of_QIDs=["Q5"],
         )
         self.influence = Influence.objects.create(
-            influencer=self.influencer,
-            influenced=self.influenced
+            influencer=self.influencer, influenced=self.influenced
         )
 
     def test_influence_creation(self):

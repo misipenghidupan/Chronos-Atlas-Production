@@ -30,8 +30,14 @@ echo "PostgreSQL is up and running! Proceeding to server startup."
 echo "Running migrations..."
 # --noinput prevents interactive prompts (like the one for 'figures' app)
 python manage.py migrate --noinput
-echo "Collecting static files..."
-python manage.py collectstatic --noinput
+
+# Only collect static files in production
+if [ "$DJANGO_SETTINGS_MODULE" = "ChronosAtlas.settings_prod" ]; then
+    echo "Collecting static files..."
+    python manage.py collectstatic --noinput
+else
+    echo "Skipping collectstatic (not production settings)"
+fi
 
 # --- 4. Execute the Main Command ---
 # This logic checks if any command was passed to the entrypoint.
@@ -44,3 +50,6 @@ else
     echo "Starting Gunicorn server..."
     exec python -m gunicorn ChronosAtlas.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120 --error-logfile - --log-level debug
 fi
+
+# --- GIT SAFE DIRECTORY WORKAROUND ---
+git config --global --add safe.directory /app || true

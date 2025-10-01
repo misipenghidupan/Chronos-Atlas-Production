@@ -7,43 +7,105 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Field',
+            name="Field",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(max_length=100, unique=True),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Occupation',
+            name="Occupation",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(max_length=100, unique=True),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Figure',
+            name="Figure",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('slug', models.SlugField(max_length=255, unique=True)),
-                ('wikidata_id', models.CharField(max_length=50, unique=True)),
-                ('summary', models.TextField(blank=True, null=True)),
-                ('birth_date', models.DateField(blank=True, null=True)),
-                ('death_date', models.DateField(blank=True, null=True)),
-                ('normalized_birth_year', models.IntegerField(blank=True, null=True)),
-                ('normalized_death_year', models.IntegerField(blank=True, null=True)),
-                ('instance_of_QIDs', models.JSONField(blank=True, default=list)),
-                ('fields', models.ManyToManyField(related_name='figures', to='figures.field')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(max_length=255),
+                ),
+                (
+                    "slug",
+                    models.SlugField(max_length=255, unique=True),
+                ),
+                (
+                    "wikidata_id",
+                    models.CharField(max_length=50, unique=True),
+                ),
+                (
+                    "summary",
+                    models.TextField(blank=True, null=True),
+                ),
+                (
+                    "birth_date",
+                    models.DateField(blank=True, null=True),
+                ),
+                (
+                    "death_date",
+                    models.DateField(blank=True, null=True),
+                ),
+                (
+                    "normalized_birth_year",
+                    models.IntegerField(blank=True, null=True),
+                ),
+                (
+                    "normalized_death_year",
+                    models.IntegerField(blank=True, null=True),
+                ),
+                (
+                    "instance_of_QIDs",
+                    models.JSONField(blank=True, default=list),
+                ),
+                (
+                    "fields",
+                    models.ManyToManyField(
+                        related_name="figures",
+                        to="figures.field",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Historical Figure',
-                'verbose_name_plural': 'Historical Figures',
-                'ordering': ['normalized_birth_year', 'name'],
+                "verbose_name": "Historical Figure",
+                "verbose_name_plural": "Historical Figures",
+                "ordering": ["normalized_birth_year", "name"],
             },
         ),
     ]

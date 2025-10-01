@@ -13,8 +13,8 @@ class Migration(migrations.Migration):
 
     operations = [
         # This operation enables the 'btree_gist' extension in PostgreSQL.
-        # While it might have been enabled by the figures migration, including it
-        # here makes this migration self-contained and robust.
+        # While it might have been enabled by the figures migration,
+        # including it here makes this migration self-contained and robust.
         BtreeGistExtension(),
         # This index optimizes queries that filter for timeline events
         # occurring in a specific year or range of years.

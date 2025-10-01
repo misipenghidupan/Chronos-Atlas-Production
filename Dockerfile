@@ -1,9 +1,9 @@
 # --- STAGE 1: Builder (Optimized for Dependency Installation) ---
-    FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
     # Set environment variables for Python optimization
-    ENV PYTHONDONTWRITEBYTECODE 1
-    ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
     
     # Install system dependencies and build tools needed for psycopg2
     RUN apt-get update \
@@ -25,11 +25,11 @@
         && apt-get purge -y --auto-remove gcc libpq-dev
     
     # --- STAGE 2: Final (Minimal Runtime Image) ---
-    FROM python:3.11-slim as final
+FROM python:3.11-slim AS final
     
     # Set environment variables
-    ENV PYTHONDONTWRITEBYTECODE 1
-    ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
     
     # Set the working directory
     WORKDIR /app
@@ -40,8 +40,11 @@
         && apt-get install --no-install-recommends -y \
         libpq5 \
         postgresql-client \
+        git \
         # Clean up APT cache to reduce image size
         && rm -rf /var/lib/apt/lists/*
+    # Install pre-commit globally for code checks inside container
+    RUN pip install pre-commit
     
     # Copy pre-built wheels from the builder stage
     COPY --from=builder /usr/src/app/wheels /wheels

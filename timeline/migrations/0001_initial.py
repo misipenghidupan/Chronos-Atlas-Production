@@ -9,34 +9,64 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('figures', '0001_initial'),
+        ("figures", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TimelineEvent',
+            name="TimelineEvent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=255)),
-                ('year', models.IntegerField()),
-                ('category', models.CharField(max_length=100)),
-                ('description', models.TextField(blank=True, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=255)),
+                ("year", models.IntegerField()),
+                ("category", models.CharField(max_length=100)),
+                ("description", models.TextField(blank=True, null=True)),
             ],
             options={
-                'ordering': ['year'],
+                "ordering": ["year"],
             },
         ),
         migrations.CreateModel(
-            name='Influence',
+            name="Influence",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('influenced', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='influences_received', to='figures.figure')),
-                ('influencer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='influences_given', to='figures.figure')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "influenced",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="influences_received",
+                        to="figures.figure",
+                    ),
+                ),
+                (
+                    "influencer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="influences_given",
+                        to="figures.figure",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Influence Relationship',
-                'verbose_name_plural': 'Influence Relationships',
-                'unique_together': {('influencer', 'influenced')},
+                "verbose_name": "Influence Relationship",
+                "verbose_name_plural": "Influence Relationships",
+                "unique_together": {("influencer", "influenced")},
             },
         ),
     ]

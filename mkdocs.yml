@@ -1,0 +1,11 @@
+site_name: Chronos Atlas Documentation
+nav:
+  - Home: index.md
+  - Execution Plan: docs/PROJECT_EXECUTION_PLAN.md
+  - API Reference: docs/README_DETAILED.md
+  - Architecture: docs/Chronos-Atlas/ARCHITECTURE_BLUEPRINT.md
+  - Data Flow: docs/Chronos-Atlas/DATA_FLOW_AND_SCALING.md
+  - Roadmap: docs/Chronos-Atlas/EXECUTION_ROADMAP.md
+  - Main README: README.md
+  - Blueprint README: docs/Chronos-Atlas/README.md
+  - Docker & Git Tips: docs/DOCKER_GIT_TIPS.md

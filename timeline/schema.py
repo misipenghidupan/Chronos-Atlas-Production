@@ -1,23 +1,27 @@
 import graphene
 from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
-from .models import TimelineEvent, Influence
+
 from .filters import TimelineEventFilter
+from .models import Influence, TimelineEvent
+
 
 # 1. Define the Graphene Type for the Influence model
 class InfluenceType(DjangoObjectType):
     class Meta:
         model = Influence
-        fields = ("id", "influencer", "influenced", "description")
+        fields = ("id", "influencer", "influenced")
         interfaces = (graphene.relay.Node,)
         filter_fields = []
+
 
 # 1. Define the Graphene Type for the TimelineEvent model
 class TimelineEventType(DjangoObjectType):
     class Meta:
         model = TimelineEvent
-        fields = ("id", "title", "year", "category", "description", "figure")
+        fields = ("id", "title", "year", "category", "description")
         interfaces = (graphene.relay.Node,)
+
 
 # 2. Define a Query class for the timeline app
 class Query(graphene.ObjectType):
