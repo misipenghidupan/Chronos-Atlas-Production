@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('timeline', '0002_add_timeline_gist_index'),
+        ("timeline", "0002_add_timeline_gist_index"),
     ]
 
     operations = [
         migrations.RemoveIndex(
-            model_name='timelineevent',
-            name='timeline_event_year_gist_idx',
+            model_name="timelineevent",
+            name="timeline_event_year_gist_idx",
         ),
     ]

@@ -1,0 +1,6 @@
+[flake8]
+ignore = E226,E302,W291
+exclude = .git,__pycache__,docs/,build/
+max-line-length = 120
+max-complexity = 10
+indent-size = 4

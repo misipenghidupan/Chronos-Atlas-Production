@@ -6,17 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('figures', '0002_add_timeseries_indexes'),
+        ("figures", "0002_add_timeseries_indexes"),
     ]
 
     operations = [
         migrations.RemoveIndex(
-            model_name='figure',
-            name='figure_lifespan_gist_idx',
+            model_name="figure",
+            name="figure_lifespan_gist_idx",
         ),
         migrations.AlterField(
-            model_name='figure',
-            name='summary',
-            field=models.TextField(default='', help_text='A brief summary or description of the figure.'),
+            model_name="figure",
+            name="summary",
+            field=models.TextField(
+                default="", help_text="A brief summary or description of the figure."
+            ),
         ),
     ]

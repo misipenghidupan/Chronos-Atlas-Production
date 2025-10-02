@@ -26,8 +26,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "graphene_django",
     "corsheaders",
-    "timeline",
-    "figures",
+    "timeline.apps.TimelineConfig",
+    "figures.apps.FiguresConfig",
 ]
 
 MIDDLEWARE = [
@@ -43,6 +43,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "ChronosAtlas.urls"
+
+# Define the absolute path to the DRF templates *inside the container*
+DRF_TEMPLATES_DIR = "/usr/local/lib/python3.11/site-packages/rest_framework/templates"
 
 TEMPLATES = [
     {

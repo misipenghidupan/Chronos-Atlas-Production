@@ -20,7 +20,7 @@ class InfluenceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Influence
-        fields = ["id", "influencer", "influenced"]
+        fields = ["id", "title", "year", "category", "description", "figure"]
 
 
 class InfluenceViewSet(viewsets.ModelViewSet):

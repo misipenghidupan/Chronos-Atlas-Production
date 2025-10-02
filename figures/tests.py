@@ -51,19 +51,12 @@ class FigureGraphQLTests(GraphQLTestCase):
                   node {
                     name
                     normalizedBirthYear
-                  mutation = (
-                      """
-                      mutation createFigure($input: FigureInput!) {
-                        createFigure(input: $input) {
-                          figure {
-                            id
-                            name
-                            normalizedBirthYear
-                          }
-                        }
-                      }
-                      """
-                  )
+                  }
+                }
+              }
+            }
+            """
+        )
         # Parse the response content
         content = json.loads(response.content)
         data = content["data"]["allFigures"]["edges"]

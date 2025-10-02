@@ -28,7 +28,6 @@ class InfluenceModelTest(TestCase):
             wikidata_id="Q935",
             normalized_birth_year=1643,
             normalized_death_year=1727,
-            instance_of_QIDs=["Q5"],
         )
         self.influenced = Figure.objects.create(
             name="Albert Einstein",
@@ -36,7 +35,6 @@ class InfluenceModelTest(TestCase):
             wikidata_id="Q937",
             normalized_birth_year=1879,
             normalized_death_year=1955,
-            instance_of_QIDs=["Q5"],
         )
         self.influence = Influence.objects.create(
             influencer=self.influencer, influenced=self.influenced
