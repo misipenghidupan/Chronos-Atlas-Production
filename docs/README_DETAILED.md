@@ -1,5 +1,3 @@
----
-
 ## 🏁 Final MVP Review & PR Template
 
 ### Final Summary
